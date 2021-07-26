@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <style>
+    </style>
+</head>
+<body>
+</body>
+<script>
+    const map1 = new Map();
+    map1.set('0', 'foo');
+    map1.set(1, 'bar');
+
+    const set1 = new Set([1, 2, 3, 4, 5]);
+
+    const str = new String('abc');
+
+    const p1 = Promise.resolve(3);
+    const p2 = 42;
+    const p3 = new Promise((resolve, reject) => {
+        setTimeout(resolve, 2000, 'foo');;
+    });
+    const p4 = new Promise((resolve, reject) => {
+        setTimeout(reject, 6000, 'bad1');
+    });
+    const p5 = new Promise((resolve, reject) => {
+        setTimeout(reject, 3000, 'bad2');
+    });
+
+    function myPromiseAll(iterableParam){
+        if(typeof iterableParam[Symbol.iterator] !== 'function'){
+            throw new TypeError('参数必须是可迭代对象');       
+        }
+        const resArr = [];
+        let count = 0;
+        const length = iterableParam.length || iterableParam.size;
+        return new Promise((resolve,reject) => {
+            let i = 0;
+            for(let item of iterableParam){
+                let index = i++;
+                Promise.resolve(item).then(
+                    (data) => {
+                        resArr[index] = data;
+                        count++;
+                        if(count === length){
+                            resolve(resArr);
+                        }
+                    }
+                ).catch(
+                    (err) => {
+                        reject(err);
+                    }
+                );
+            };
+        });
+    }
+
+    var allp = myPromiseAll(set1);
+    allp.then((values) => {
+        console.log('all 正确');
+        console.log(values);
+    }).catch(err =>{
+        console.log('all 报错');
+        console.log(err);
+    });
+
+    var allsp = Promise.all(set1);
+    allsp.then((values) => {
+        console.log('all Standard 正确');
+        console.log(values);
+    }).catch(err =>{
+        console.log('all Standard 报错');
+        console.log(err);
+    });
+
+    function myPromiseRace(iterableParam){
+        if(typeof iterableParam[Symbol.iterator] !== 'function'){
+            throw new TypeError('参数必须是可迭代对象');
+        }
+
+        return new Promise((resolve,reject) => {
+            for(let item of iterableParam ){
+                Promise.resolve(item).then(
+                    (data) => {
+                        resolve(data);
+                    }
+                ).catch(
+                    (err) => {
+                        reject(err);
+                    }
+                );
+            };
+        });
+    }
+
+    var racep = myPromiseRace(map1);
+    var racesp = Promise.race(map1);
+    racep.then((values) => {
+        console.log('race 正确');
+        console.log(values);
+    }).catch(err =>{
+        console.log('race 报错');
+        console.log(err);
+    });
+    racesp.then((values) => {
+        console.log('race Standard 正确');
+        console.log(values);
+    }).catch(err =>{
+        console.log('race Standard 报错');
+        console.log(err);
+    });
+</script>
+</html>
