@@ -2624,7 +2624,6 @@ import param from './profile.js'
 更具体的说，迭代器这个对象通过next()方法返回具有两个属性的对象：**value**（这是序列中的 next 值）和**done**（如果已经迭代到序列的最后一个值，则它就是true），这个有value和done的对象就是迭代器的返回值
 
 >  只能迭代一次的Iterables（例如Generators）通常从它们的**@@iterator**方法中返回它本身，其中那些可以多次迭代的方法必须在每次调用**@@iterator**时返回一个新的迭代器。
->
 
 **迭代协议**分为两个部分：
 
@@ -2703,7 +2702,7 @@ JS代码只能执行捕获或者冒泡其中的一个阶段
 
 onclick和attachEvent只能得到冒泡阶段，也就是说是冒泡开始的
 
-addEventListener(type,listener[,options,userCapture])
+addEventListener(type,listener[,options,userCapture,wantsUntrusted])
 
 第四个参数为true,表示在**捕获阶段调用事件处理程序**；
 
@@ -2716,6 +2715,10 @@ addEventListener(type,listener[,options,userCapture])
 > - `capture`:  Boolean，表示 `listener` 会在该类型的事件捕获阶段传播到该 `EventTarget` 时触发。
 > - `once`:  Boolean，表示 `listener 在添加之后最多只调用一次。如果是` `true，` `listener` 会在其被调用之后自动移除。
 > - `passive`: Boolean，设置为true时，表示 `listener` 永远不会调用 `preventDefault()`。如果 listener 仍然调用了这个函数，客户端将会忽略它并抛出一个控制台警告。
+>
+> 第五个参数不是标准的参数
+>
+> wantsUntrusted如果为 `true `, 则事件处理程序会接收网页自定义的事件。此参数只适用于 Gecko（[chrome](https://developer.mozilla.org/zh-CN/docs/Glossary/Chrome)的默认值为true，其他常规网页的默认值为false），主要用于附加组件的代码和浏览器本身。
 
 
 
@@ -2748,3 +2751,11 @@ addEventListener(type,listener[,options,userCapture])
 两个中任意满足一个即可。
 
 常见的，如Promise、setTimeout
+
+
+
+### JS中sort的坑和sort源码
+
+坑：https://segmentfault.com/a/1190000018076819
+
+源码：https://zhuanlan.zhihu.com/p/33626637
