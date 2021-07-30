@@ -2765,3 +2765,37 @@ addEventListener(type,listener[,options,userCapture,wantsUntrusted])
 
 
 React：https://juejin.cn/post/6844903985338400782#heading-22
+
+
+
+### NestJS学习
+
+文档：https://docs.nestjs.cn/7/firststeps
+
+NestJS是一个高效，易于扩展的Nodejs框架。内置并完全支持TypeScript（eggjs就不能很好的支持，各种第三方库可能不受控制）。
+
+Nest底层使用了强大的HTTP Server框架，如Express，Fastify。Nest在这些框架的基础上提供了一定程度的抽象，同时也将其API暴露给开发人员。这样可以轻松使用每个平台的第三方模块。
+
+
+
+Nest通过依赖注入(DI)的方式进行控制反转。
+
+只要声明模块中的依赖，Nest就会在启动的时候去创建依赖，然后自动注入到相应的地方。
+
+依赖注入的最大作用就是依赖解耦，依赖的对象根据不同的情况可以有多种实现。
+
+
+
+Nest遵从面向切面编程（AOP）的思想。
+
+除了`Middleware`外，还有`Exception Filter`、`Pipes`、`Guards`和`Interceptors`几个预定义的切面，可以集中进行异常处理、数据验证、权限验证和逻辑扩展等功能。
+
+Nest自带如数据验证等一些常用的基于切面的功能，也可以通过继承的方式来进行扩展。这些预定义的切面是代码架构的组成部分，按照这些约定来组织代码会大大降低日后的维护成本。
+
+> 所谓AOP，简单理解就是在目标方法执行的前后，执行我们想要执行的代码，一般来说框架里面经常用到aop编程，而要做到aop，常常用到动态代理的技术。即会通过代理类，增强原有的目标类，加入方法执行前后需要执行的目标代码，这个过程不需要人为手动实现。
+
+
+
+### 为什么很多Web项目还是使用px，而不是rem？
+
+https://www.zhihu.com/question/313971223
