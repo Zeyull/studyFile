@@ -39,7 +39,15 @@ function flat_4(arr){
     },[]);
 }
 
+// 当数组内类型都是字符串或数字时
+function flat_5(arr){
+    return arr.toString().split(',').map(function(item) {
+        return Number(item);
+    })
+}
+
 console.log(flat_1(arr));
 console.log(flat_2(arr));
 console.log(flat_3(arr));
 console.log(flat_4(arr));
+console.log(flat_5(arr));
