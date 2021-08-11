@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <style>
+        .tringle{
+            width: 0;
+            height: 0;
+            border-left: 20px solid transparent;
+            border-bottom: 40px solid black;
+            border-right: 30px solid transparent;
+        }
+        .right-tringle{
+            width: 0;
+            height: 0;
+            border-top: 20px solid transparent;
+            border-left: 40px solid black;
+        }
+
+        .trapezoid{
+            width: 100px;
+            height: 0;
+            border-bottom: 100px solid red;
+            border-left: 50px solid transparent;
+            border-right: 50px solid transparent;
+        }
+
+        .parallelogram{
+            width: 150px;
+            height: 100px;
+            transform: skew(20deg);
+            background-color: green;
+        }
+        
+        .pentagon{
+            position: relative;
+            width: 25px;
+            height: 0;
+            border-top: 25px solid red;
+            border-left: 12.5px solid transparent;
+            border-right: 12.5px solid transparent;
+        }
+
+        .pentagon::after{
+            position: absolute;
+            left: -12.5px;
+            top: -50px;
+            content: "";
+            width: 0;
+            height: 0;
+            border-bottom: 25px solid red;
+            border-left: 25px solid transparent;
+            border-right: 25px solid transparent;
+        }
+
+        .circle-circle{
+            width: 50px;
+            height: 50px;
+            border:100px solid black;
+            border-radius: 50%;
+        }
+
+        .circle-lefttop{
+            width: 50px;
+            height: 50px;
+            border-top-left-radius: 100%;
+            background-color: cadetblue;
+        }
+    </style>
+</head>
+<body>
+    <!-- 普通三角 -->
+    <div class="tringle"></div>
+    <br />
+    <!-- 直角三角形 -->
+    <div class="right-tringle"></div>
+    <br />
+    <!-- 梯形 -->
+    <div class="trapezoid"></div>
+    <br />
+    <!-- 平行四边形 -->
+    <div class="parallelogram"></div>
+    <br />
+    <!-- 五边形 -->
+    <div class="pentagon"></div>
+    <br />
+    <!-- 同心圆形 -->
+    <div class="circle-circle"></div>
+    <br />
+    <!-- 左上四分之一圆 -->
+    <div class="circle-lefttop"></div>
+</body>
+</html>

@@ -1158,36 +1158,105 @@ HTTPS就结合这个两种加密方式，先使用非对称加密保证密钥交
 
 ### HTTP缓存
 
-缓存可以分为两种类型：**强缓存和协商缓存**
+按缓存的位置上来看，可以分为四种，从上往下依次检查是否命中，如果但都没有命中则重新发起请求。
+
+- **Service Worker**是运行在浏览器背后的独立线程，一般可以用来实现缓存功能。使用Service Work的话，传输协议必须是https
+
+- **Memory Cache**是内存中的缓存，主要包含的是当前页面已经抓取到的资源，例如页面上下载的样式，脚本，图片等。读取内存的数据肯定比读取磁盘快，但内存数据虽然高效，缓存持续性很短，会随着进程的释放而释放。一旦我们关闭了tab标签页，内存中的缓存也就被释放了。
+
+  > 内存缓存中有一块重要的缓存资源是preloader相关指令（例如）下载的资源。它可以一边解析js/css文件，一边网络请求下一个资源。
+
+- **Disk Cache**是存储在硬盘中的缓存，读取速度较慢，但什么都能存储到磁盘中，比Memory Cache胜在容量和存储时效性上。
+
+  > 绝大部分的缓存都来自Disk Cache，在HTTP头中设置
+
+- **Push Cache**是推送缓存，是HTPP/2中的内容，当以上三种缓存都没命中时，它才会使用。它只在会话（Session）中存在，一旦会话结束就被释放，并且缓存时间也很短暂，在chrome浏览器中只存在5分钟左右，同时它也并非严格执行HTTP头中的缓存指令。
+
+缓存又分为两大类型：**强缓存和协商缓存**
 
 区别：
 
 - 强缓存时，浏览器如果判断本地缓存未过期，就直接使用，无需发起http请求  200 from cache
 - 协商缓存，浏览器会向服务器发起http请求，然后服务器告诉浏览器文件未改变，让浏览器使用本地缓存 304
 
-缓存头部简述：
+关于缓存的http头部字段简述：
 
 属于**强缓存控制**的：
 
-http1.0  Pragma/Expires
+http/1.0  
+
+**Pragma**
 
 Pragma严格来说不是专门缓存控制头部，但它设置no-cache时可以让本地强缓存失效
+
+指令：
+
+no-cache
+
+与 Cache-Control: no-cache 效果一致。强制要求缓存服务器在返回缓存的版本之前将请求提交到源头服务器进行验证（协商缓存）。
+
+**Expires**
+
+Expires响应头包含日期/时间， 即在此时候之后，响应（缓存）过期。
+
+指令：
+
+一个 HTTP-日期 时间戳
 
 Expires是服务器端配置的，属于强缓存，用来控制在规定的时间之前，浏览器不会发出请求，而是直接使用本地缓存。
 
 
 
-http1.1 Cache-control/Max-Age
+http1.1 
 
-Cache-control,存控制头部，有no-cache、max-age等多种取值
+**Cache-control** 
 
-Max-Age,服务端配置的，用来控制强缓存，在规定的时间之内，浏览器无需发出请求，直接使用本地缓存，注意，Max-Age是Cache-Control头部的值，不是独立的头部
+Cache-Control通用消息头字段，被用于在http请求和响应中，通过指定指令来实现缓存机制。
+
+指令：
+
+可缓存性
+
+- public，表明响应可以被任何对象（包括：发送请求的客户端，代理服务器，等等）缓存，即使是通常不可缓存的内容。
+- private，表明响应只能被单个用户缓存，不能作为共享缓存（即代理服务器不能缓存它）。私有缓存可以缓存响应内容，比如：对应用户的本地浏览器。
+- no-cache，在发布缓存副本之前，强制要求缓存把请求提交给原始服务器进行验证(协商缓存验证)。
+- no-store，缓存不应存储有关客户端请求或服务器响应的任何内容，即不使用任何缓存。
+
+到期
+
+- max-age=\<seconds\>  设置缓存存储的最大周期，超过这个时间缓存被认为过期(单位秒)。与Expires相反，max-age时间是相对于请求的时间。
+- s-maxage=\<seconds> 覆盖max-age或者Expires头，但是仅适用于共享缓存(比如各个代理)，私有缓存会忽略它
+
+重新验证和重新加载
+
+- must-revalidate 一旦资源过期（比如已经超过`max-age`），在成功向原始服务器验证之前，缓存不能用该资源响应后续请求。（告诉浏览器、缓存服务器，本地副本过期前，可以使用本地副本；本地副本一旦过期，必须去源服务器进行有效性校验。）
+- proxy-revalidate 与 must-revalidate作用相同，但它仅适用于共享缓存（例如代理），并被私有缓存忽略。
+
+其他
+
+- no-transform 不得对资源进行转换或转变。`Content-Encoding`、`Content-Range`、`Content-Type`等HTTP头不能由代理修改。
+- only-if-cached 表明客户端只接受已缓存的响应，并且不要向原始服务器检查是否有更新的拷贝。
+
+> 还有很多指令，这里只有一部分
+
+指定 `no-cache` 或 `max-age=0, must-revalidate` 表示客户端可以缓存资源，每次使用缓存资源前都必须重新验证其有效性。这意味着每次都会发起 HTTP 请求，但当缓存内容仍有效时可以跳过 HTTP 响应体的下载。(也就是协商缓存)
+
+如果cache-control与expires同时存在，cache-control的优先级高于expires
+
+
 
 属于**协商缓存控制**的：
+
+协商缓存需要跟服务端通过特殊标示连接，即第一次请求的响应头带上某个字段（**Last-Modified**或者**Etag**），则后续请求则会带上对应的请求字段（**If-Modified-Since**或者**If-None-Match**），若响应头没有Last-Modified或者Etag字段，则请求头也不会有对应的字段。
 
 http1.0 If-Modified-Since/Last-Modified
 
 If-Modified-Since/Last-Modified成对出现，属于协商缓存的内容，在发起请求时，如果`If-Modified-Since(浏览器的头部)`和`Last-Modified(服务器的头部)`**匹配**，**那么代表服务器资源并未改变，因此服务端不会返回资源实体**，而是只返回头部，通知浏览器可以使用本地缓存。Last-Modified 顾名思义，指的是文件最后的修改时间
+
+1. 浏览器第一次跟服务器请求一个资源，respone的header里加上Last-Modified：**表示这个资源在服务器上的最后修改时间**
+2. 浏览器再次跟服务器请求这个资源时，在request的header上加上If-Modified-Since的header：上一次请求时返回的Last-Modified的值
+3. 服务器再次收到资源请求时，会判断**最后修改时间**是否有变化，如果没有变化则返回304 Not Modified，但是不会返回资源内容；如果有变化，就正常返回资源内容，Last-Modified会被修改为最新的值。如果没有变化，服务器返回304 Not Modified，Last-Modified不会修改，response header中不会再添加Last-Modified的header
+4. 浏览器收到304的响应后，就会从缓存中加载资源
 
 
 
@@ -1195,24 +1264,57 @@ http1.1 If-None-Match/E-tag
 
 If-None-Match/E-tag，这两个是成对出现的属于协商缓存的内容，其中浏览器的头部是`If-None-Match`，而服务端的是`E-tag`，同样，发出请求后，如果`If-None-Match`和`E-tag`匹配，则代表内容未变，通知浏览器使用本地缓存。
 
+由服务器生成的**每个资源的唯一标识字符串**，只要资源有变化就这个值就会改变；其判断过程与Last-Modified/If-Modified-Since类似，与Last-Modified不一样的是，当服务器返回304 Not Modified的响应时，由于ETag重新生成过，response header中还会把这个**ETag返回**，即使这个ETag跟之前的没有变化。
+
+1. 一些文件也许会周期性的更改，但是他的内容并不改变(仅仅改变的修改时间)，这个时候我们并不希望客户端认为这个文件被修改了，而重新GET；
+2. 某些文件修改非常频繁，比如在秒以下的时间内进行修改，(比方说1s内修改了N次)，If-Modified-Since能检查到的粒度是s级的，这种修改无法判断(或者说UNIX记录MTIME只能精确到秒)；
+3. 某些服务器不能精确的得到文件的最后修改时间。
+
+Last-Modified与ETag是可以一起使用的，服务器会优先验证ETag，一致的情况下，才会继续比对Last-Modified，最后才决定是否返回304。
+
+
+
 **区别**
 
-- Max-Age相比Expires的话，Expires使用的是服务器端的时间，而Max-Age使用的是客户端时间。如果出现客户端和服务器时间不同步，使用Expires会造成浏览器本地缓存无效或一直无法过期
-- E-tag和Last-Modified？
-  - Last-Modified表示服务端文件最后何时改变，只能**精确到1s**，有的服务器的文件会周期改变，导致缓存失效
+- Max-Age相比Expires的话，Expires使用的是服务器端的时间，而Max-Age是相对于客户端请求的时间。如果出现客户端和服务器时间不同步，使用Expires会造成浏览器本地缓存无效或一直无法过期
+- E-tag和Last-Modified
+  - Last-Modified表示服务端文件最后何时改变，只能**精确到1s**，有些改变频繁的文件，在秒以下的时间内进行了修改，而Last-Modified精准度不够，导致缓存失效
   - E-tag是一种指纹机制，代表文件的相关指纹，**没有时间限制**，只要文件一遍，E-tag立马改变
 
 
 
-如何明确禁止缓存？Cache-Control: no-store,no-store, must-revalidate
+浏览器请求过程：有无缓存 -> 强缓存 -> 协商缓存
 
-> Cache-Control还有哪些参数？public表示一些中间代理,CDN等可以缓存，但max-age信息已经明确告知可以缓存了。
->
-> private明确告知了资源只能单个用户可以缓存，其他中间代理不能缓存
+**缓存头优先级：Cache-Control > Expires > Etag > Last-Modified**
 
-https://www.huaweicloud.com/articles/04381448f73f8fb778826aef50271873.html
+顺序访问图参考：https://segmentfault.com/a/1190000017311517
 
-https://www.cnblogs.com/chenqf/p/6386163.html
+关于Cache-Control/Etag存在拿去验证后，是否还需要去验证Expires/Last-Modified，存疑
+
+
+
+如何明确禁止缓存？
+
+Pragma: no-cache(让本地强缓存失效，效果和Cache-Control: no-cache类似)
+
+Cache-Control: no-store
+
+
+
+**用户对缓存的影响**
+
+- 地址栏输入地址，先查看Disk Cache中是否匹配，没有匹配则发送网络请求。
+- 普通的刷新F5，优先使用Memory Cache，其次才是Disk Cache
+- 强制刷新Crtl + F5，浏览器不适用缓存
+
+| 用户操作        | Expires/Cache-Control | Last-Modified/Etag |
+| --------------- | --------------------- | ------------------ |
+| 地址栏回车      | 有效                  | 有效               |
+| 页面链接跳转    | 有效                  | 有效               |
+| 新开窗口        | 有效                  | 有效               |
+| 前进后退        | 有效                  | 有效               |
+| F5刷新          | 无效                  | 有效               |
+| Ctrl+F5强制刷新 | 无效                  | 无效               |
 
 
 
