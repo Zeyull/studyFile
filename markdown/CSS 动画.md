@@ -87,11 +87,12 @@ animation比较类似于 flash 中的**逐帧动画**，逐帧动画就像电影
 
 - animation-name
 - animation-duration(设置动画的持续时间)
-- animation-timing-fucntion(与transition-timing-function类似)
+- animation-timing-fucntion(与transition-timing-function类似) linear表示匀速
+- animation-iteration-count 动画播放次数，infinite表示无限次数
 - animation-delay
 - animation-iteration-count (动画循环次数)
-- animation-direction (设置动画播放方向)
-- animation-play-state(播放状态)
+- animation-direction (设置动画播放方向) 默认值为`normal`表示向前播放，`alternate`代表动画播放在第偶数次向前播放，第奇数次向反方向播放
+- animation-play-state(播放状态)  主要是来控制动画的播放状态：`running`代表播放，而`paused`代表停止播放
 
 ```css
 .animation {
@@ -113,6 +114,10 @@ animation比较类似于 flash 中的**逐帧动画**，逐帧动画就像电影
 `transition`是从一个状态变化到另外一种状态，当变化有了平滑的效果后就产生了动画，它是一个公式化的变化，在比较规则的动画效果中我们可以使用，例如：旋转的风车、行驶的汽车、颜色的渐变等等。
 
 `animation`的动画效果更加灵活，可以实现像影片一样的复杂无规则的动画。
+
+
+
+注意：transform父元素动了之后，子元素会跟着动
 
 
 

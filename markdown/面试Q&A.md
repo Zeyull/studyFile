@@ -562,6 +562,22 @@ JS的类型分为两种
 - 原始数据类型：布尔值，数值，字符串，null，undefined和新类型Symbol,BigInt
 - 对象类型
 
+**JS中的错误类型有**
+
+1. SyntaxError 语法错误
+2. ReferenceErro 引用错误
+3. RangeError 范围错误
+4. TypeError 类型错误
+5. URLError URL错误：主要是相关函数的参数不正确。
+6. EvalError eval错误： 当eval()函数没有被正确执行时，会抛出evalError错误。但是ES5以上的JS已经不再抛出这个错误，但依然可以通过new关键字来自定义该类型的错误提示
+
+这些错误，连同原生Error都是构造函数，可以自己生成错误对象的实例
+
+```javascript
+throw new Error('出错了！');
+throw new TypeError('类型错误！');
+```
+
 
 
 ### 防抖和节流
@@ -2290,11 +2306,13 @@ left+margin-left+border-left-width+padding-left+width+padding-right+border-right
    :nth-of-type(n)
    
    nth-child还比较特殊，在特定情况下还选不出来指定的标签
-   <div>
+   <section>
    	<p>
    	<div>
-   </div>
-   div p:nth-child(1)这时候选不出来，但nth-of-type就能选出来（观测顺序不一样）
+   </section>
+   section div:nth-child(1)这时候选不出来，但nth-of-type就能选出来（观测顺序不一样）
+   使用nth-child，会把所有子元素排序，必须是子元素和顺序都匹配上才能选出来，否则选不出来。在上面的案例中就是必须是div的一个元素，而且必须是div标签，而第一个是p标签，所以匹配不了，选不出来。
+   而nth-of-type是排列指定元素的序号，section div:nth-of-type(1)就能匹配子元素的第一个div
    ```
 
    
@@ -2318,6 +2336,76 @@ left+margin-left+border-left-width+padding-left+width+padding-right+border-right
 让图片变模糊：滤镜filter CSS属性将模糊或颜色偏移等图形效果应用于元素 如 filter:blur(5px)
 
 calc函数，此CSS函数能在声明CSS属性时执行一些计算，+ - * /都可以,运算符前后都需要保留一个空格，任何长度值都可以使用calc()函数进行计算
+
+
+
+### CSS选择器权重
+
+CSS基本选择器有类选择器、属性选择器和ID选择器。
+
+CSS 的选择器有很多，常用的有 [元素选择器](https://blog.csdn.net/qq_42351033/article/details/103225005)、[id 选择器](https://blog.csdn.net/qq_42351033/article/details/103225736)、[class 选择器](https://blog.csdn.net/qq_42351033/article/details/103229023)、[后代选择器](https://blog.csdn.net/qq_42351033/article/details/103244891)、[子代选择器](https://blog.csdn.net/qq_42351033/article/details/103246217)、[并集选择器](https://blog.csdn.net/qq_42351033/article/details/103246871)、[交集选择器](https://blog.csdn.net/qq_42351033/article/details/103280516)、[伪类选择器](https://blog.csdn.net/qq_42351033/article/details/103281108#font_color3399EA_size4stronginput_strongfont_93)、[通配符选择器](https://blog.csdn.net/qq_42351033/article/details/103291503) 等。
+
+CSS选择器的权重预示着CSS选择器样式渲染的先后顺序，元素样式渲染时，权重高的选择器样式会覆盖权重低的选择器样式。
+
+通常将权重分为4个等级，可用0.0.0.0来表示这4个等级。
+
+！important关键字优先级最高。
+
+注意：！important井非选择器，而是针对选择器内的单一样式设置的。当然，不同选择器内应用 ！important的权重也是不一样的，例如，在id选择器内的！important关键字权重要高于类选择器内的 ！important关键字权重，即下面所说的选择器权重组合。
+
+- 内联样式（非元素器）的优先级可看成1.0.0.0
+- ID选择器的优先级为0.1.0.0
+- 类属性选择器、属性选择器、伪类的优先级为0.0.1.0
+- 元素选择器、伪元素选择器的优先级为0.0.0.1
+- 通配符选择器对特殊性没有任何贡献值
+
+当把选择器组合使用的时候，相应的层级权重也会递增，例如# id .class的权重为0.1.1.0
+
+
+
+> 伪类如 :first-child, :nth-last-child(n), :hover等等
+>
+> 伪元素选择器如::after, ::before等等
+
+
+
+注意：
+
+- 当两个选择器组合权重不一样时，用权重高的选择器，不在意代码中谁上谁下
+- 当两个选择器组合权重一样时，看代码汇总谁上谁下
+- 类 ID 和 ID 类的组合权重是一样的
+- !important的权重比内联样式还要高
+- 选择器组合是没有父级优于子级这一说法的，比如
+
+```html
+  <style>
+    #box .sp {
+      color: green;
+    }
+
+    #qqqq .sp {
+      color: red;
+    }
+  </style>
+</head>
+
+<body>
+  <div id="box">
+    <p class="ap" id="qqqq">
+      <span class="sp" id="sqqq">text</span>
+    </p>
+  </div>
+</body>
+```
+
+组合优先级一样高，red在下面，文字呈现为红色
+
+参考文章：
+
+- 【前端面试题】02—59道CSS面试题(附答案)https://blog.csdn.net/snsHL9db69ccu1aIKl9r/article/details/114297605
+- 【CSS】什么是 CSS 中的子代选择器https://blog.csdn.net/qq_42351033/article/details/103246217
+
+
 
 
 
