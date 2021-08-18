@@ -445,6 +445,8 @@ timers 阶段会执行 setTimeout 和 setInterval 回调，并且是由 poll 阶
 
 **poll**:
 
+取出新完成的 `I/O` 事件；执行与 `I/O` 相关的回调（除了关闭回调，计时器调度的回调和 `setImmediate` 之外，几乎所有这些回调） 适当时，`node` 将在此处阻塞。
+
 poll是一个至关重要的阶段，这一阶段中
 
 poll阶段有两个主要的功能：一是执行下限时间已经达到的timers的回调，一是处理poll队列里的事件。
@@ -480,7 +482,7 @@ Poll阶段，当js层代码注册的事件回调都没有返回的时候，事�
 - 1、node初始化
 
   - 初始化node环境
-  - 执行输入的代码，执行同步代码，把各个回调函数放入各个阶段的回调队列中
+  - 执行输入的代码，执行**同步代码，把各个回调函数放入各个阶段的回调队列中**
   - 执行`process.nextTick`回调
   - 执行微任务(microtasks)
 
@@ -3364,6 +3366,24 @@ key不同的情况：
 
 
 
+### 受控组件与非受控组件
+
+对于存在表单输入的组件来说，该类组件分为受控组件和非受控组件
+
+受控与非受控是什么意思呢？就是我们**对某个组件状态的掌控，它的值是否只能由用户设置，而不能通过代码控制**。
+
+
+
+受控组件：
+
+在HTML的表单元素中，它们通常自己维护一套`state`，并随着用户的输入自己进行`UI`上的更新，这种行为是不被我们程序所管控的。而如果将`React`里的`state`属性和表单元素的值建立依赖关系，再通过`onChange`事件与`setState()`结合更新`state`属性，就能达到**控制用户输入过程中表单发生的操作**。
+
+能被React控制数据取值等操作的组件就叫做**受控组件**。
+
+相反的，**React只能被动接收DOM表单返回的信息，不受React状态操作的表单输入组件**，就叫非受控组件
+
+
+
 ### 关于useState
 
 返回一个 state，以及更新 state 的函数。
@@ -3403,6 +3423,97 @@ new {name:'c'} !== old {name:'c'}
 当函数不依赖props、state或它们衍生而来的值时，才能安全的指定的第二个参数为[ ]
 
 为什么不安全？目前不能很好的说明原因，但如果不写依赖，effect内则不会更新，如果有一些判断事件，则会出bug
+
+
+
+### useCallback
+
+useCallback接收一个回调函数，一个依赖项数组作为参数，返回一个memoized（具有记忆技术的）回调函数，只有在依赖数组中值变化后才会更新返回值。
+
+> memoization是JavaScript中的一种记忆技术，通过缓存结果并在下一个操作中重新使用缓存来加速查找效率的操作。
+>
+> 什么叫记忆性技术？
+>
+> 每次调用函数把你的传参和结果记录下来，遇到相同的传参，就直接返回记录缓存的结果，不用再去调用函数处理数据！
+
+**误区**:useCallback是解决函数组件过多内部函数的性能问题（因为每次重新渲染，都要重新构造内部函数，所以我用这个函数，那么每次是不是就不会重新创建内部数组了呢？这是一大误区）
+
+使用函数组件时经常定义一些内部函数，总觉得这会影响函数组件性能。也以为`useCallback`就是解决这个问题的，其实并不是：
+
+1. JS内部创建函数很快的，这点性能不是问题
+2. 相对于class更轻量的函数式组件，避免了HOC, renderProps等额外层级，函数式组件的性能较好
+3. 使用了useCallback会额外增加性能，因为增加了额外的deps数组变换判断
+4. 最重要的一点，useCallback不能解决内部函数重新创建的问题。不管是否使用useCallback，都无法避免重新创建内部函数。虽然函数引用不会变（这点我无从证实）
+
+useCallBack**解决的问题时利用momeize函数减少不必要的组件渲染**
+
+当一个子组件只用了一个内部函数，没用到其他状态，但其他状态更新了后，整个组件都要重新渲染，重新生成一个函数，导致函数引用不一样，从而导致了这个子组件也跟着重新渲染，但实际上两次渲染没有什么差别，白白浪费了性能。
+
+（这里有个疑问，React.memo的作用感觉很鸡肋，因为React原本的渲染机制就不会去重新渲染那些props不变的组件，是用memo更快吗？还是我理解的渲染机制有问题）
+
+
+
+### useMemo
+
+useMemo的作用和useCallback的作用很相似，传入一个值和依赖数组，返回一个memoized的值，依赖数组变化后才会更新返回值
+
+与useCallback的区别：
+
+- useCallback针对的是函数，传参和结果都是函数；而useMemo主要针对那些计算量较大的值，避免组件进行一些冗余计算
+- useCallback可以看作是useMemo的一种特殊情况；传入useMemo的函数具有限制，因为传入 useMemo的函数会在渲染期间执行。请不要在这个函数内部执行与渲染无关的操作，诸如**副作用这类的操作**属于 useEffect的适用范畴，而不是 useMemo
+
+**可以把 useMemo作为性能优化的手段，但不要把它当成语义上的保证。**
+
+
+
+### Memo
+
+React.memo是高阶组件
+
+> 高阶组件（HOC）是 React 中用于复用组件逻辑的一种高级技巧。HOC 自身不是 React API 的一部分，它是一种基于 React 的组合特性而形成的设计模式。
+>
+> 具体而言，**高阶组件是参数为组件，返回值为新组件的函数。**
+
+如果组件在相同 props 的情况下渲染相同的结果，那么可以通过将其包装在 `React.memo` 中调用，以此通过记忆组件渲染结果的方式来提高组件的性能表现。这意味着在这种情况下，React 将跳过渲染组件的操作并直接复用最近一次渲染的结果。
+
+> `React.memo` 仅检查 props 变更。如果函数组件被 `React.memo` 包裹，且其实现中拥有 [`useState`](https://zh-hans.reactjs.org/docs/hooks-state.html)，[`useReducer`](https://zh-hans.reactjs.org/docs/hooks-reference.html#usereducer) 或 [`useContext`](https://zh-hans.reactjs.org/docs/hooks-reference.html#usecontext) 的 Hook，当 state 或 context 发生变化时，它仍会重新渲染。
+
+默认情况下其只会对复杂对象做浅层对比，如果你想要控制对比过程，那么请将自定义的比较函数通过第二个参数传入来实现。
+
+
+
+以上三个可以理解记忆：useCallback针对函数Memoized,useMemo主要针对参与渲染的值Memoized，Memo针对组件进行Memoized
+
+这三个都可以减少渲染次数，从而达到页面性能优化，但不要过多的使用，「记住」这个过程本来就会消耗一定的内存和计算资源，考虑不使用memoized情况的开销，考虑每次对比是浅比较的情况，再进行使用这三个API
+
+> 参与页面性能优化的API还有很多，比如useRef,useReducer,creatContext等，后续再深入学
+
+
+
+### React中的portal
+
+> 官方解释：Portal 提供了一种将子节点渲染到存在于父组件以外的 DOM 节点的优秀的方案。
+
+React中的portal，能让一个React组件存放在任意一个存在的DOM节点内，就像给这个React组件开了一个传送门，最后能渲染在任一一个存在的DOM树内。
+
+ portal 的典型用例是当父组件有 `overflow: hidden` 或 `z-index` 样式时，但你需要子组件能够在视觉上“跳出”其容器。例如，对话框、悬浮卡以及提示框
+
+具体使用:
+
+ReactDom.createPortal(child,container)
+
+- 第一个参数（`child`）是任何[可渲染的 React 子元素](https://zh-hans.reactjs.org/docs/react-component.html#render)，例如一个元素，字符串或 fragment。
+- 第二个参数（`container`）是一个 DOM 元素。
+
+**关于使用了portal的元素的事件冒泡**
+
+使用了portal后，该元素在DOM树中的位置和在React树中的位置不一致，也就是在React中编写该元素时的位置与其渲染出来在DOM树中的位置不一致（这是显而易见的）
+
+那么该元素的事件冒泡会被冒泡到React树的父级，而不是DOM树的父级
+
+参考：
+
+- 官方文档 https://zh-hans.reactjs.org/docs/portals.html
 
 
 
