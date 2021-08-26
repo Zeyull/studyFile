@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <style>
+        li{
+            list-style: none;
+        }
+
+        .active{
+            background-color: cadetblue;
+        }
+    </style>
+</head>
+<body>
+    <ul id="eventParent">
+        <li class="class-1">1</li>
+        <li id="2">2</li>
+        <li>3</li>
+        <li>4</li>
+        <li>5</li>
+        <li>6</li>
+    </ul>
+</body>
+<script>
+    const ul = document.getElementById('eventParent');
+    
+    // ul.addEventListener('click',function(e){
+    //     Array.from(ul.children).forEach((item)=>{
+    //         item.className = '';
+    //     })
+    //     e.target.className = 'active';
+    // })
+    ul.addEventListener('click',function(e){
+        if(e.target.matches('li.class-1')){
+            e.target.classList.add('active');
+        }
+        console.log(e.target.classList);
+    })
+</script>
+</html>

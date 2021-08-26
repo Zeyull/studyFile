@@ -16,18 +16,18 @@
     const debounceButton = document.getElementById('debounce');
     const throttleButton = document.getElementById('throttle');
 
-    function debounce(fn,timeout){
-        let timer = null;
-        return (...args) =>{
-            if(timer){
-                clearTimeout(timer);
-                timer = null;
-            }
-            timer = setTimeout(() => {
-                fn(...args);
-            }, timeout);
-        }
-    }
+    // function debounce(fn,timeout){
+    //     let timer = null;
+    //     return (...args) =>{
+    //         if(timer){
+    //             clearTimeout(timer);
+    //             timer = null;
+    //         }
+    //         timer = setTimeout(() => {
+    //             fn(...args);
+    //         }, timeout);
+    //     }
+    // }
 
     function debounceFn(e){
         console.log(`防抖${e}`);
@@ -35,18 +35,18 @@
     const debounceButtonFn = debounce(debounceFn,3000);
     debounceButton.addEventListener('click',debounceButtonFn);
 
-    function throttle(fn,timeout){
-        let timer = null;
-        return (...args) => {
-            if(!timer){
-                timer = setTimeout(() => {
-                    fn(...args);
-                    clearTimeout(timer);
-                    timer = null;
-                }, timeout);
-            }
-        }
-    }
+    // function throttle(fn,timeout){
+    //     let timer = null;
+    //     return (...args) => {
+    //         if(!timer){
+    //             timer = setTimeout(() => {
+    //                 fn(...args);
+    //                 clearTimeout(timer);
+    //                 timer = null;
+    //             }, timeout);
+    //         }
+    //     }
+    // }
 
     function throttleFn(e){
         console.log(`节流${e}`);

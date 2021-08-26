@@ -107,9 +107,115 @@ git status -s 查看工作区状态
 
 ### Git Merge 和 Git Rebase的区别
 
-共同的作用：都是把不同分支的提交合并到一起
+共同的作用：**都是把不同分支的提交合并到一起**
 
-https://chinese.freecodecamp.org/news/an-introduction-to-git-merge-and-rebase-what-they-are-and-how-to-use-them/
+**Git Merge**
+
+ 把源分支的提交放到目标分支里。在这个过程中，只有目标分支改变，而源分支保持原样
+
+**优点**
+
+- 简单易上手
+- 保留了提交历史和时间次序
+- 保留了分支的结构
+
+**缺点**
+
+- 提交历史被大量的 merge 提交污染了
+
+- 使用 git bisect 调试变得更困难了
+
+  >  git bisect 是通过二分法找到哪一次代码提交引入了错误
+  >
+  > ```
+  > $ git bisect start [终点] [起点]
+  > $ git bisect good
+  > $ git bisect bad
+  > 通过二分不断重复，找到出现问题的那一次提交
+  > $ git bisect reset 退出查错，回到最近一次的代码提交
+  > ```
+
+如何使用
+
+使用 checkout 和 merge 命令把 master 分支 merge 到 feature 分支。
+
+```text
+$ git checkout feature
+$ git merge master
+
+(or)
+
+$ git merge master feature
+```
+
+这将会在 feature 分支上创建一个新的 “Merge 提交” 用来保留合并记录。
+
+
+
+**GitRebase**
+
+变基命令
+
+Rebase 把所有的提交压缩成一个 “patch”。然后把 patch 添加到目标分支里，生成一个新的分支。
+
+和 merging 不同，rebasing 清除了历史，因为它完全是从一个分支转移到了另一个分支。在这个过程中，多余的记录被移除了。
+
+**优点**
+
+- 把复杂的历史变成优雅的提交线
+- 操作单个提交变得很简单（比如，reverting）
+- 避免了庞大的仓库、海量的分支以及烦人的 merge 提交
+- 线性合并清除了中间的无用提交，对于 DevOps 团队来说是个好消息
+
+**缺点**
+
+- Rebase 后 feature 分支间的上下文模糊了
+- 在团队里 rebasing 公共分支是高风险的事
+- 工作变多了：feature 分支需要经常更新
+- Rebasing 到远程分支需要 force push。最大的问题是人们经常已经 force push 了，才发现忘记了设置 git push 默认值。结果本地远程所有同名的分支都进行了更新，清理起来很要命。
+
+使用
+
+下面的命令把 feature 分支 rebase 到 master 分支上。
+
+```text
+$ git checkout feature
+$ git rebase master
+```
+
+它把整个 feature 分支的提交移动到了 master 分支上。通过给每个源(feature) 分支创建了一个 brand 来 re-writing 项目的历史。
+
+> feature1落后master分支的提交，命令把 feature 分支 rebase 到 master 分支上的过程
+>
+> 首先，`git` 会把 `feature1` 分支里面的每个 `commit` 取消掉；
+> 其次，把上面的操作临时保存成 `patch` 文件，存在 `.git/rebase` 目录下；
+> 然后，把 `feature1` 分支更新到最新的 `master` 分支；
+> 最后，把上面保存的 `patch` 文件应用到 `feature1` 分支上；
+
+> **Interactive Rebasing**
+>
+> 这个命令可以在移动 commit 前改变它们。这比普通的 rebase 更加强大，它提供了对分支提交历史的完整控制。另外，在合并 feature 分支到 master 前，还可以用它来清理混乱的提交历史。
+>
+> ```text
+> $ git checkout feature
+> $ git rebase -i master
+> ```
+>
+> 他会打开编辑器列出将要被移动的提交。
+>
+> ```text
+> pick 22d6d7c Commit message#1
+> pick 44e8a9b Commit message#2
+> pick 79f1d2h Commit message#3
+> ```
+>
+> 它清晰地展示了分支在 rebase 后的样子。通过重新调整，提交历史可以变成任何你想要的样子。如，可以把 `pick` 换成 `fixup` , `squash` , `edit` 等命令。
+
+Git Rebase保持了合并记录的整洁，但它是一个危险的命令，它改变了历史。如果是多人合作的一个分支，不建议使用Git Rebase，容易出现提交记录不一致的错误。
+
+参考文章：
+
+- https://chinese.freecodecamp.org/news/an-introduction-to-git-merge-and-rebase-what-they-are-and-how-to-use-them/
 
 
 
@@ -166,15 +272,19 @@ https://chinese.freecodecamp.org/news/an-introduction-to-git-merge-and-rebase-wh
 5. 使用懒加载图片，这种情况下能减少页面初始化时HTTP请求数，只有在用户向下滚动屏幕时才会再次请求加载
 6. 使用更高版本的HTTP，在HTTP2中会采用多路复用，浏览器推送等优化机制
 
-**在渲染页面时的优化**，解析html时，遇到一些链接资源，会单独开启下载线程去下载资源
+**在渲染页面时的优化**
+
+解析html时，遇到一些链接资源，会单独开启下载线程去下载资源
 
 1. 对于CSS资源，虽然下载时异步，不会阻止浏览器构建DOM树，但是会阻塞渲染，在构建render树时，要等待CSS下载完毕后才执行（这里是浏览器自带的优化，避免了重复构建），但声明了media query的CSS不会阻塞渲染
 2. 对于JS资源，会阻塞浏览器的解析，只有等待脚本下载完并执行后才会继续解析HTML，但加上了async和defer后，脚本就变成异步的了，可以等HTML解析完毕后再执行
 
 > defer和async是有区别的： **defer是延迟执行，而async是异步执行。**但只要是JS执行，就会暂停HTML解析
 >
-> - `async`是异步执行，异步下载完毕后就会执行，不确保执行顺序，一定在`onload`前，但不确定在`DO会MContentLoaded`事件的前或后
+> - `async`是异步执行，异步下载完毕后就会执行，不确保执行顺序，一定在`onload`前，但不确定在`DOMContentLoaded`事件的前或后
 > - `defer`是延迟执行，在浏览器看起来的效果像是将脚本放在了`body`后面一样，等待HTML解析完毕后才执行脚本（虽然按规范应该是在`DOMContentLoaded`事件前，但实际上不同浏览器的优化效果不一样，也有可能在它后面）
+
+合理利用光栅线程和合成线程的机制，这里涉及浏览器相关知识
 
 **通过原生JS的技巧来进行性能优化**
 
@@ -193,7 +303,7 @@ https://chinese.freecodecamp.org/news/an-introduction-to-git-merge-and-rebase-wh
 
 > 不同地区的用户会访问到离自己最近的相同网络线路上的CDN节点，当请求达到CDN节点后，节点会判断自己的内容缓存是否有效，如果有效，则立即响应缓存内容给用户，从而加快响应速度。如果CDN节点的缓存失效，它会根据服务配置去**一层一层的向上**获取最新的资源响应给用户，并将内容缓存下来以便响应给后续访问的用户，这就意味着一个地区的用户只需要访问一次服务器，后续的用户都能因此受益。
 
-**预解析DNS**。通过 DNS 预解析来告诉浏览器未来我们可能从某个特定的 URL 获取资源，当浏览器真正使用到该域中的某个资源时就可以尽快地完成 DNS 解析。
+**预解析DNS**。通过 DNS 预解析来告诉浏览器未来我们可能从某个特定的 URL 获取资源，当浏览器真正使用到该域中的某个资源时就可以**尽快地完成 DNS 解析**。
 
 ​	通过设置X-DNS-Prefetch-Control头控制浏览器的DNS预解析功能。先在meta信息告诉浏览器开启X-DNS-Prefetch-Control，再在link里面强制对DNS进行预解析
 
@@ -947,6 +1057,10 @@ param.concat 给param连接一个或多个，不改变param，返回新的字符
 某一个开销很大的操作，可以通过虚拟代理的方式延迟到**需要它的时候才创建**
 
 应用：图片懒加载
+
+https://xie.infoq.cn/article/88c926822394aa1c80847dd2a
+
+https://juejin.cn/post/6844903653774458888
 
 
 
