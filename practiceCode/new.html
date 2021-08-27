@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+</head>
+<body>
+    
+</body>
+<script>
+    function Cap(name){
+        this.belong = 'name';
+    }
+
+    function _new (fn,...args){
+        const obj = Object.create(fn.prototype);
+        const res = fn.apply(obj,args);
+        return res instanceof Object ? res : obj;
+    }
+    console.log(new Cap('celesteliao'));
+    console.log(_new(Cap,'celesteliao'));
+</script>
+</html>

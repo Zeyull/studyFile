@@ -10,10 +10,10 @@ function curry_1(fn){
     }
 }
 
-function curry_2(fn,args){
+function curry_2(fn,args = []){
     var length = fn.length;
-    args = args || [];
     return function(...rest) {
+      // 用的是_args进行接收传递，而没有用args，这样初始args始终为[]，不会出现上面需要清空数组的情况
       var _args = [...args, ...rest];
       return _args.length < length
         ? curry_2.call(this, fn, _args)

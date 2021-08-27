@@ -819,6 +819,52 @@ ul.addEventListener('click',function(e){
 
 
 
+### JS中的new关键字
+
+JS中的new关键字会进行以下操作：
+
+1. 创建一个空的简单JS对象，即{}
+2. 为新建的对象添加\__proto__，将该属性链接至构造函数的原型对象（修改原型链）
+3. 将新建的对象作为传入函数的this上下文（this绑定）
+4. 如果构造函数内部显示返回对象数据类型，则返回该数据；否则返回新创建的对象
+
+> 如果原本的构造函数内部返回基础类型，那么最后new的返回值还是创建的对象
+>
+> 如果是返回的一个对象，则new返回这个对象（对应第四条）
+
+ 手写一个new
+
+```javascript
+    function _new (fn,...args){
+        const obj = Object.create(fn.prototype);
+        const res = fn.apply(obj,args);
+        return res instanceof Object ? res : obj;
+    }
+```
+
+> 这里不能用typeof进行类型判断
+>
+> 因为用typeof去判断null，得到的结果是'object'
+>
+> 这是一个JS自己的bug，null应该是原始数据基本类型。
+>
+> 而instanceof 是看被判断的数据（实例对象）的原型链上是否有后面这个构造函数的原型对象，就不会出现误判null为object的情况
+
+**为什么typeof null === ‘obejct’ ？**
+
+在 JavaScript 最初的实现中，JavaScript 中的值是由**一个表示类型的标签**和**实际数据值**表示的
+
+对象的类型标签是 0。但由于 null 代表的是空指针（大多数平台下值为 0x00），因此，**null 的类型标签也是 0**
+
+typeof判断是判断其类型标签，typeof null 也因此返回 "object"。
+
+参考文章：
+
+- 详解 JS 中 new 调用函数原理 https://juejin.cn/post/6844903630605123598
+- MDN typeof https://developer.mozilla.org/zh-CN/docs/Web/JavaScript/Reference/Operators/typeof#null
+
+
+
 ### 闭包
 
 闭包就是指**有权调用另一个函数作用域中变量的函数**（外面的这个函数，不是返回的函数）
