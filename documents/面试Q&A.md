@@ -1046,6 +1046,12 @@ for of是遍历对象的属性的值（键值），只能用于可迭代的数�
 
 
 
+### 什么是Node.JS
+
+https://segmentfault.com/a/1190000019854308
+
+
+
 ### Node.js 和 JS的区别
 
 > Node.js是基于V8引擎的运行环境，是一个能让JS**运行在服务器端的平台**，让JS成为PHP、Python等服务端语言平起平坐的脚本语言
@@ -1397,7 +1403,7 @@ HTTPS就结合这个两种加密方式，先使用非对称加密保证密钥交
    - 确认SSL/TLS协议版本，如果浏览器不支持，则关闭加密通信
    - 服务器生成的随机数B
    - 确认密码套件列表
-   - 服务器的数字证书
+   - 服务器的数字证书（里面存放服务器的公钥）
 
 3. 客户端收到这些信息后，首先通过浏览器或者操作系统中**早已备好**的CA公钥，确定**数字证书的真实性**。如果证书没问题，客户端会从数字证书中取出公钥（服务端的），**用这个公钥来加密报文**，向服务器发送这些信息：
 
@@ -1539,7 +1545,7 @@ Last-Modified与ETag是可以一起使用的，服务器会优先验证ETag，�
 - Max-Age相比Expires的话，Expires使用的是服务器端的时间，而Max-Age是相对于客户端请求的时间。如果出现客户端和服务器时间不同步，使用Expires会造成浏览器本地缓存无效或一直无法过期
 - E-tag和Last-Modified
   - Last-Modified表示服务端文件最后何时改变，只能**精确到1s**，有些改变频繁的文件，在秒以下的时间内进行了修改，而Last-Modified精准度不够，导致缓存失效
-  - E-tag是一种指纹机制，代表文件的相关指纹，**没有时间限制**，只要文件一遍，E-tag立马改变
+  - E-tag是一种指纹机制，代表文件的相关指纹，**没有时间限制**，只要文件一变，E-tag立马改变
 
 
 
@@ -1719,7 +1725,7 @@ Webpack本身只能处理JS模块，要处理其他类型的模块，要使用lo
 
 > 自己理解的 ，后续需要改动
 >
-> entry：要编译的
+> entry：编译入口
 >
 > output：打包出来的文件
 >
@@ -1867,64 +1873,77 @@ Object.assign() 方法用于将所有可枚举属性的值从一个或多个源�
 
 ```javascript
 进阶版：考虑了其他类型和循环引用
-let obj = {
-    test_obj:'obj'
-}
-let set = new Set([11,12,obj]);
-let map = new Map([[12,13],[14,obj]])
-let a = [1,2,3,[4,5,6,[7,8]],{'9':9,'10':10,'15':set},set,map]
-let reg = /\w/;
-let oldObj = {
-    oldObj:a,
-    b:1,
-    reg_test:reg
-}
 
 function deepClone(target,hash = new WeakMap()){
     let result;
     if(typeof target === 'object'){
       if(hash.has(target))  return hash.get(target);
-      if(target instanceof RegExp || target === null || target instanceof Function){
+      if(target instanceof RegExp || target === null){
         result = target;
-        hash.set(target, result);
-    }else if(target instanceof Set){
-        result = new Set();
-        hash.set(target, result);
-        for(let item of target){
-            result.add(deepClone(item,hash));
-        }
+      }else if(target instanceof Function){
+        result = cloneFunction(target);
+      }else if(target instanceof Set){
+          result = new Set();
+
+          for(let item of target){
+              result.add(deepClone(item,hash));
+          }
       }else if(target instanceof Map){
         result = new Map();
-        hash.set(target, result);
-        hash.set(target, result);
+        
         for(let item of target){
             result.set(deepClone(item[0],hash),deepClone(item[1],hash));
         }
       }else if(target instanceof Array){
         result = [];
-        hash.set(target, result);
+        
         for(let item of target){
           result.push(deepClone(item,hash));
         }
       }else{
         result = {};
-        hash.set(target, result);
+        
         for(let item in target){
           result[item] = deepClone(target[item],hash);
         }
       }
+      hash.set(target, result);
     }else{
       result = target;
     }
     return result;
 }
 
-let newObj = deepClone(oldObj);
-console.log(newObj);
-obj.test_obj = "??????";
-console.log(oldObj);
-console.log(newObj);    
+// 关于函数的克隆
+function cloneFunction(func) {
+  const bodyReg = /(?<={)(.|\n)+(?=})/m;
+  const paramReg = /(?<=\().+(?=\)\s+{)/;
+  const funcString = func.toString();
+  if (func.prototype) {
+      console.log('普通函数');
+      const param = paramReg.exec(funcString);
+      const body = bodyReg.exec(funcString);
+      if (body) {
+          console.log('匹配到函数体：', body[0]);
+          if (param) {
+              const paramArr = param[0].split(',');
+              console.log('匹配到参数：', paramArr);
+              return new Function(...paramArr, body[0]);
+          } else {
+              return new Function(body[0]);
+          }
+      } else {
+          return null;
+      }
+  } else {
+      return eval(funcString);
+  }
+}    
 ```
+
+参考文章：
+
+- 如何写一个惊艳面试官的深拷贝？ https://segmentfault.com/a/1190000020255831
 
 
 
@@ -2306,7 +2325,7 @@ left+margin-left+border-left-width+padding-left+width+padding-right+border-right
 
 而auto的作用是：自动填充剩余空间， 所以给div设置margin：auto时，在水平方向上 margin会填充 div这一行中除了left+border-left-width+padding-left+width+padding-right+border-right-width+right的剩余的空间，当左右的margin都设置为auto时，会平分剩余空间，从而实现水平居中。那为什么没有按照上述同样的方式填充垂直方向上的剩余空间呢？
 
-因为在垂直方向上，块级元素不会自动扩充，它的外部尺寸没有自动充满父元素，也没有剩余空间可说。所以margin：auto不能实现垂直居中。
+因为在垂直方向上，**块级元素不会自动扩充**，它的外部尺寸没有自动充满父元素，也没有剩余空间可说。所以margin：auto不能实现垂直居中。
 
 但是
 
@@ -2381,6 +2400,10 @@ left+margin-left+border-left-width+padding-left+width+padding-right+border-right
 - opacity:0修改元素造成**重绘**，性能消耗较少，读屏器会读取opacity:0元素内容
 
 共同特点：它们都能让元素不可见
+
+参考文章：
+
+- CSS魔法堂：display:none和visiblity:hidden的恩怨情仇 https://segmentfault.com/a/1190000016570003
 
 
 
@@ -3252,7 +3275,7 @@ JS创建正则表达式:
 >
 > string表示原字符串
 >
-> NameCaptureGroup命名组匹配的对象 不知道有是没用，普通打印出来的是undifined
+> NameCaptureGroup命名组匹配的对象 不知道有什么用，普通打印出来的是undifined
 
 
 
@@ -3351,6 +3374,8 @@ import param from './profile.js'
 换一个角度来看，export default就是输出一个default的变量和方法，所以可以用export输出一个default的变量，但实际效果与export default相比我也不是很清楚
 
 > `export default`命令用于指定模块的默认输出。显然，一个模块只能有一个默认输出，因此`export default`命令只能使用一次。所以，import命令后面才不用加大括号，因为只可能唯一对应`export default`命令。
+>
+> 两种可以同时使用
 
 
 

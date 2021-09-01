@@ -16,39 +16,66 @@ function deepClone(target,hash = new WeakMap()){
     let result;
     if(typeof target === 'object'){
       if(hash.has(target))  return hash.get(target);
-      if(target instanceof RegExp || target === null || target instanceof Function){
+      if(target instanceof RegExp || target === null){
         result = target;
-        hash.set(target, result);
-    }else if(target instanceof Set){
-        result = new Set();
-        hash.set(target, result);
-        for(let item of target){
-            result.add(deepClone(item,hash));
-        }
+      }else if(target instanceof Function){
+        result = cloneFunction(target);
+      }else if(target instanceof Set){
+          result = new Set();
+
+          for(let item of target){
+              result.add(deepClone(item,hash));
+          }
       }else if(target instanceof Map){
         result = new Map();
-        hash.set(target, result);
-        hash.set(target, result);
+        
         for(let item of target){
             result.set(deepClone(item[0],hash),deepClone(item[1],hash));
         }
       }else if(target instanceof Array){
         result = [];
-        hash.set(target, result);
+        
         for(let item of target){
           result.push(deepClone(item,hash));
         }
       }else{
         result = {};
-        hash.set(target, result);
+        
         for(let item in target){
           result[item] = deepClone(target[item],hash);
         }
       }
+      hash.set(target, result);
     }else{
       result = target;
     }
     return result;
+}
+
+// 关于函数的克隆
+function cloneFunction(func) {
+  const bodyReg = /(?<={)(.|\n)+(?=})/m;
+  const paramReg = /(?<=\().+(?=\)\s+{)/;
+  const funcString = func.toString();
+  if (func.prototype) {
+      console.log('普通函数');
+      const param = paramReg.exec(funcString);
+      const body = bodyReg.exec(funcString);
+      if (body) {
+          console.log('匹配到函数体：', body[0]);
+          if (param) {
+              const paramArr = param[0].split(',');
+              console.log('匹配到参数：', paramArr);
+              return new Function(...paramArr, body[0]);
+          } else {
+              return new Function(body[0]);
+          }
+      } else {
+          return null;
+      }
+  } else {
+      return eval(funcString);
+  }
 }
 
 let newObj = deepClone(oldObj);
