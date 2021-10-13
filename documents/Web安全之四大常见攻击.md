@@ -150,7 +150,7 @@ Cookie: name=kk
 Other-Request-Name: Other-Request-Value:
 ```
 
-对比以上的代码可以看出，只有Referer字段不同。也就是说，只有请求来源不相同，而发送删除文章的请求时都会带上相同的cookie信息。这样的请求就是身份认证后的，CSRF攻击就会成功。
+对比以上的代码可以看出，只有Referer字段不同。**也就是说，只有请求来源不相同，而发送删除文章的请求时都会带上相同的cookie信息。这样的请求就是身份认证后的，CSRF攻击就会成功**。
 
 ### POST CSRF
 

@@ -21,7 +21,7 @@ function curry_2(fn,args = []){
     }
 }
 
-var fn = curry_2(function(a, b, c) {
+var fn = curry(function(a, b, c) {
   console.log(a + b + c);
 });
 fn('a', 'b', 'c'); // abc

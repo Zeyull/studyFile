@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+</head>
+<body>
+    
+</body>
+<script>
+    function myAjax(options){
+        const xhr = new XMLHttpRequest();
+        // API open 初始化一个网络请求
+        xhr.open(options.method,options.url);
+        // API setRequestHeader 设置 HTTP 请求头的值 必须在open之后，send之前
+        xhr.setRequestHeader('content-type','application/x-www-form-urlencoded');
+        // API send 发送请求。如果请求是异步的（默认），那么该方法将在请求发送后立即返回。
+        // options.data是要发送的数据体 如果请求方法是get或head，应该不传参（默认为null） 如果是post方法，传入请求体
+        if(options.data){
+            xhr.send(options.data);
+        }else{
+            xhr.send();
+        }
+        // API onreadystatechange 当readystate发生改变时调用的处理函数
+        xhr.onreadystatechange = (e)=>{
+            if(xhr.readyState === XMLHttpRequest.DONE){
+                if(xhr.status === 200){
+                    let res = JSON.parse(xhr.responseText);
+                    options.success(res);
+                }
+            }
+            // ...更多状态码的进行自定义处理
+        }
+
+        // xhr.readState 属性是返回一个XMLHttpRequest代理当前所处的状态。一共有五种状态
+        // DONE表示操作已完成。这意味着数据传输已经彻底完成或失败
+    }
+
+</script>
+</html>

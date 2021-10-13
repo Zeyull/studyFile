@@ -13,7 +13,7 @@ Function.prototype.bindFn = function (thisArg){
         var boundArgs = [].slice.call(arguments);
         var finalArgs = args.concat(boundArgs);
 
-        if(!new.target){
+        if(new.target){
             // 如果是箭头函数，直接抛出错误
             if(!self.prototype){
                 throw new TypeError(`${self.name}.bind is not constructor`);
