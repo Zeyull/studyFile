@@ -15,7 +15,7 @@
         // API open 初始化一个网络请求
         xhr.open(options.method,options.url);
         // API setRequestHeader 设置 HTTP 请求头的值 必须在open之后，send之前
-        xhr.setRequestHeader('content-type','application/x-www-form-urlencoded');
+        xhr.setRequestHeader('accept','*/*');
         // API send 发送请求。如果请求是异步的（默认），那么该方法将在请求发送后立即返回。
         // options.data是要发送的数据体 如果请求方法是get或head，应该不传参（默认为null） 如果是post方法，传入请求体
         if(options.data){

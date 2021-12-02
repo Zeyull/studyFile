@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+</head>
+<body>
+    <input type="text" class="in-text">
+    <h1 class="out-text"></h1>
+</body>
+<script>
+    const input = document.querySelector('.in-text');
+    const output  = document.querySelector('.out-text');
+    let data = {}
+    function defineReactive (obj, key, val) {
+        Object.defineProperty(obj,key,{
+            enumeralbe:true,
+            configurable:true,
+            get(){
+                return val;
+            },
+            set(newValue){
+                output.innerHTML = newValue;
+                console.log('?');
+                if(val == newValue){
+                    return;
+                }
+                val = newValue;
+            }
+        })
+    };
+    input.addEventListener('input',function(e){
+        data.text = e.target.value;
+    })
+    ;
+    defineReactive(data,'text','');
+    // https://www.cnblogs.com/zhenfei-jiang/p/7542900.html
+    // https://www.cnblogs.com/canfoo/p/6891868.html
+</script>
+</html>

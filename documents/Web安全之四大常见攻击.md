@@ -167,7 +167,7 @@ Other-Request-Name: Other-Request-Value:
 ### CSRF危害
 
 1. 模拟表单提交盗取用户资金。实际上就是上面所说的POST CSRF攻击
-2. 篡改目标网站上的用户数据。
+2. 篡改目标网站上的用户数据
 3. 盗取用户隐私数据
 
 ### CSRF防范
