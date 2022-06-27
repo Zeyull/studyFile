@@ -16,16 +16,15 @@
     const debounceButton = document.getElementById('debounce');
     const throttleButton = document.getElementById('throttle');
 
-    // function debounce(fn,timeout){
+    // function debounce(fn, timeout = 3000){
     //     let timer = null;
     //     return (...args) =>{
-    //         if(timer){
+    //         if(timer) clearTimeout(timer);
+    //         timer = setTimeout(() => {
+    //             fn(args);
     //             clearTimeout(timer);
     //             timer = null;
-    //         }
-    //         timer = setTimeout(() => {
-    //             fn(...args);
-    //         }, timeout);
+    //         },timeout);
     //     }
     // }
 

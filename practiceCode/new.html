@@ -13,12 +13,11 @@
     function Cap(name){
         this.belong = 'name';
     }
-
-    function _new (fn,...args){
-        const obj = Object.create(fn.prototype);
-        const res = fn.apply(obj,args);
-        return res instanceof Object ? res : obj;
-    }
+    // function _new (fn,...args){
+    //     const obj = Object.create(fn.prototype);
+    //     const res = fn.apply(obj,args);
+    //     return res instanceof Object ? res : obj;
+    // }
     console.log(new Cap('celesteliao'));
     console.log(_new(Cap,'celesteliao'));
     // new 不能调用非constructor，箭头函数就是非constructor，无论它有没有prototpye.constructor

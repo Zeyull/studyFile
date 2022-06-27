@@ -59,6 +59,8 @@ CSS选择器的权重预示着CSS选择器样式渲染的先后顺序，元素�
 
 组合优先级一样高，red在下面，文字呈现为红色
 
+#box .ap .sp{}的优先级比#box .sp高，大概原因是它多了一个类选择器
+
 参考文章：
 
 - 【前端面试题】02—59道CSS面试题(附答案)https://blog.csdn.net/snsHL9db69ccu1aIKl9r/article/details/114297605

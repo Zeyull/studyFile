@@ -4,7 +4,7 @@
 
 1. 数据存储在用户浏览器中
 2. 设置，读取方便、甚至刷新页面不丢失数据
-3. 容量较大，sessionStorage约5M，localStroage约20M
+3. 容量较大，sessionStorage约5M，localStroage约20M ，不确定，不同文章说法不同。
 4. 只能存储字符串，可以将对象用JSON.stringify()编码后存储
 5. 两者都是window里面的属性
 

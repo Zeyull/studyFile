@@ -19,7 +19,7 @@
     }
 
     function Son(name,age,game){
-        Father.apply(this,arguments);
+        Father.apply(this,Array.from(arguments));
         this.game = game;
     }
 
@@ -33,5 +33,31 @@
     const son = new Son('boby',16,'CS:Go');
     console.log(fa);
     console.log(son);
+
+    class F{
+        constructor(name){
+            this.name = name
+        }
+
+        static create(){
+            console.log('create');
+        }
+    }
+
+    class S extends F{
+        constructor(name, age){
+            super(name); // super参数和父元素的参数对应，并不是一个数组
+            this.age = age;
+        }
+        // 通过super调用父类静态方法，不过只能在静态方法中使用
+        static sCreate(){
+            super.create();
+        }
+    }
+    const f= new F(1);
+    const s  = new S(2,2);
+    S.create();
+    S.sCreate();
+    console.log(f,s);
 </script>
 </html>
